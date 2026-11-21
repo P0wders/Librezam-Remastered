@@ -220,7 +220,10 @@ function reorderProviders(fromIndex, toIndex) {
 
 function updateCounter() {
     const counter = document.querySelector('#selectedProviders h6')
-    counter.textContent = t('selectedProviders', [String(selectedProviders.length)])
+    const count = String(selectedProviders.length)
+    // Keep data-i18n-args in sync so a later page translation doesn't reset it to 0
+    counter.setAttribute('data-i18n-args', JSON.stringify([count]))
+    counter.textContent = t('selectedProviders', [count])
 }
 
 async function saveSettings() {
