@@ -190,7 +190,7 @@ if __name__ == '__main__':
     # For normal build, exclude them to avoid copying them to dist
     exclude_list = ['dist', 'manifest.json', 'build.py', '.git', '.gitignore', 'requirements.txt',
                     # build-only files, never shipped in the extension
-                    'build.sh', 'BUILD.md', 'third_party', '.venv', 'node_modules']
+                    'build.sh', 'BUILD.md', 'third_party', '.venv', 'node_modules', 'docs']
     if not args.watch:
         # In non-watch mode, exclude manifest files from being copied
         exclude_list.extend(['manifest_chrome.json', 'manifest_firefox.json', 'manifest_ffdroid.json'])
