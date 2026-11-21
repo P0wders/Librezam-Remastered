@@ -277,15 +277,23 @@ function dialog({ title, message, buttons }) {
         const previous = document.activeElement
         const overlay = document.createElement("div")
         overlay.className = "ui-dialog-overlay"
-        overlay.innerHTML = `
-            <div class="ui-dialog" role="alertdialog" aria-modal="true">
-                ${title ? `<h3 class="ui-dialog-title"></h3>` : ""}
-                <p class="ui-dialog-message"></p>
-                <div class="ui-dialog-actions"></div>
-            </div>`
-        if (title) overlay.querySelector(".ui-dialog-title").textContent = title
-        overlay.querySelector(".ui-dialog-message").textContent = message
-        const actions = overlay.querySelector(".ui-dialog-actions")
+        const box = document.createElement("div")
+        box.className = "ui-dialog"
+        box.setAttribute("role", "alertdialog")
+        box.setAttribute("aria-modal", "true")
+        if (title) {
+            const h = document.createElement("h3")
+            h.className = "ui-dialog-title"
+            h.textContent = title
+            box.appendChild(h)
+        }
+        const msg = document.createElement("p")
+        msg.className = "ui-dialog-message"
+        msg.textContent = message
+        const actions = document.createElement("div")
+        actions.className = "ui-dialog-actions"
+        box.append(msg, actions)
+        overlay.appendChild(box)
 
         const finish = value => {
             overlay.classList.remove("show")

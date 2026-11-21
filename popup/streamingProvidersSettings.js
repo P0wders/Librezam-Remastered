@@ -65,11 +65,21 @@ function createProviderElement(providerId, provider, isSelected, index = -1) {
     div.dataset.providerId = providerId
     div.dataset.index = index
     
-    div.innerHTML = `
-        <img src="${provider.icon}" width="24" height="24" class="provider-icon">
-        <span class="provider-name">${provider.name}</span>
-        ${isSelected ? '<i class="material-icons remove-btn">close</i>' : ''}
-    `
+    const icon = document.createElement('img')
+    icon.src = provider.icon
+    icon.width = 24
+    icon.height = 24
+    icon.className = 'provider-icon'
+    const name = document.createElement('span')
+    name.className = 'provider-name'
+    name.textContent = provider.name
+    div.append(icon, name)
+    if (isSelected) {
+        const remove = document.createElement('i')
+        remove.className = 'material-icons remove-btn'
+        remove.textContent = 'close'
+        div.appendChild(remove)
+    }
     
     return div
 }

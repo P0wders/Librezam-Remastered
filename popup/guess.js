@@ -211,8 +211,6 @@ async function writeHistory(){
 function renderHistoryTable(histories = currentHistories) {
     const container = document.getElementById("historyCards")
     container.innerHTML = ""
-    const escapeStr = t => new Option(t).innerHTML
-
     if (!histories.length) {
         container.innerHTML = `<div class="history-empty">—</div>`
         return
@@ -226,16 +224,32 @@ function renderHistoryTable(histories = currentHistories) {
 
         const dateStr = history.timestamp ? new Date(history.timestamp).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""
 
-        card.innerHTML = `
-            <div class="history-card-main-info">
-                <div class="history-card-title">${escapeStr(history.title)}</div>
-                <div class="history-card-artist">${escapeStr(history.artist)}</div>
-            </div>
-            ${dateStr ? `<div class="history-card-date">${escapeStr(dateStr)}</div>` : ''}
-            <button class="iconButton delete-btn" data-index="${index}">
-                <i class="material-icons">delete_outline</i>
-            </button>
-        `
+        const info = document.createElement("div")
+        info.className = "history-card-main-info"
+        const titleEl = document.createElement("div")
+        titleEl.className = "history-card-title"
+        titleEl.textContent = history.title
+        const artistEl = document.createElement("div")
+        artistEl.className = "history-card-artist"
+        artistEl.textContent = history.artist
+        info.append(titleEl, artistEl)
+        card.appendChild(info)
+
+        if (dateStr) {
+            const dateEl = document.createElement("div")
+            dateEl.className = "history-card-date"
+            dateEl.textContent = dateStr
+            card.appendChild(dateEl)
+        }
+
+        const del = document.createElement("button")
+        del.className = "iconButton delete-btn"
+        del.dataset.index = index
+        const delIcon = document.createElement("i")
+        delIcon.className = "material-icons"
+        delIcon.textContent = "delete_outline"
+        del.appendChild(delIcon)
+        card.appendChild(del)
 
         const cover = document.createElement("img")
         cover.className = "history-card-cover"

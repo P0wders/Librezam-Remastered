@@ -204,8 +204,6 @@ export async function translatePage() {
                 element.placeholder = message;
             } else if (element.tagName === 'OPTION') {
                 element.textContent = message;
-            } else if (element.hasAttribute('data-i18n-html')) {
-                element.innerHTML = message;
             } else {
                 element.textContent = message;
             }
