@@ -1,0 +1,542 @@
+/*
+ * Librezam settings theme
+ * Loaded after materialize + popup.css on every settings page so they match
+ * the main popup (guess.css). Only visual overrides, no layout logic.
+ */
+
+:root {
+    color-scheme: dark;
+    --brand: #1a70d8;
+    --brand-light: #4f95ec;
+    --brand-color: var(--brand-light);
+    --bg: #0e1014;
+    --surface: #171a21;
+    --surface-2: #1f232c;
+    --surface-hover: #262b36;
+    --line: rgba(255, 255, 255, 0.07);
+    --line-strong: rgba(255, 255, 255, 0.13);
+    --text: #f1f3f7;
+    --muted: #98a1b0;
+    --faint: #6b7383;
+    --danger: #ff7a7a;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    /* Materialize (M3) tokens */
+    --md-sys-color-primary: var(--brand-light);
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: rgba(79, 149, 236, 0.16);
+    --md-sys-color-on-primary-container: var(--brand-light);
+    --md-sys-color-secondary: var(--brand-light);
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: var(--surface-2);
+    --md-sys-color-on-secondary-container: var(--text);
+    --md-sys-color-background: var(--bg);
+    --md-sys-color-on-background: var(--text);
+    --md-sys-color-surface: var(--surface);
+    --md-sys-color-on-surface: var(--text);
+    --md-sys-color-surface-variant: var(--surface-2);
+    --md-sys-color-on-surface-variant: var(--muted);
+    --md-sys-color-outline: var(--line-strong);
+    --md-sys-color-outline-variant: var(--line-strong);
+    --md-sys-color-inverse-surface: var(--surface-2);
+    --md-sys-color-inverse-on-surface: var(--text);
+}
+
+/* ---------- Page ---------- */
+
+body.themed {
+    width: 360px;
+    height: 540px;
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    background-color: var(--bg);
+    padding: 60px 14px 18px !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-hover) transparent;
+}
+
+/* Keep the chosen background image, but subdued (same as the popup) */
+body.themed::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(14, 16, 20, 0.86);
+    backdrop-filter: blur(14px);
+    z-index: -1;
+    pointer-events: none;
+}
+
+body.themed a { color: var(--brand-light); }
+
+/* ---------- Top bar ---------- */
+
+body.themed nav.navbar,
+body.themed nav.navbar .nav-wrapper {
+    height: 48px !important;
+    line-height: 48px !important;
+    box-shadow: none !important;
+}
+body.themed nav.navbar {
+    background: rgba(14, 16, 20, 0.82) !important;
+    backdrop-filter: blur(14px) !important;
+    border-bottom: 1px solid var(--line) !important;
+}
+body.themed nav.navbar .nav-wrapper { background: transparent !important; }
+
+body.themed nav .brand-logo,
+body.themed nav .brand-logo.center {
+    left: 50px !important;
+    transform: none !important;
+    font-size: 15px !important;
+    font-weight: 650;
+    letter-spacing: 0.2px;
+    color: var(--text) !important;
+    line-height: 48px !important;
+}
+
+body.themed nav .back_button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 34px !important;
+    height: 34px !important;
+    margin: 7px 0 0 8px !important;
+    padding: 0 !important;
+    border-radius: 10px;
+    font-size: 20px !important;
+    line-height: 34px !important;
+    color: var(--muted) !important;
+    transition: background 0.15s, color 0.15s;
+}
+body.themed nav .back_button:hover {
+    transform: none !important;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text) !important;
+}
+
+/* ---------- Typography ---------- */
+
+body.themed h4,
+body.themed h5 {
+    font-size: 15px !important;
+    font-weight: 650 !important;
+    line-height: 1.3 !important;
+    color: var(--text);
+    margin: 18px 0 8px !important;
+}
+body.themed > h5:first-of-type,
+body.themed > form:first-of-type > h5:first-child,
+body.themed .container > h5:first-child { margin-top: 2px !important; }
+
+body.themed h6 {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: var(--muted);
+    margin: 14px 0 6px !important;
+    letter-spacing: 0.2px;
+}
+
+body.themed p { color: var(--text); }
+body.themed .helper-text,
+body.themed .caption-muted,
+body.themed .grey-text,
+body.themed .container > p,
+body.themed #fallbackRulesSection p {
+    color: var(--muted) !important;
+    font-size: 12px !important;
+    line-height: 1.45;
+}
+
+/* ---------- Main settings list ---------- */
+
+body.themed .collection {
+    margin: 0 !important;
+    padding: 4px;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: var(--surface) !important;
+    backdrop-filter: none !important;
+    overflow: hidden;
+}
+body.themed .collection .collection-item {
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    padding: 12px 10px 12px 12px !important;
+    border: 0 !important;
+    border-radius: 9px;
+    background: transparent !important;
+    color: var(--text) !important;
+    font-size: 14px;
+    line-height: 1.3;
+    transition: background 0.15s;
+}
+body.themed .collection .collection-item + .collection-item { margin-top: 1px; }
+body.themed .collection .collection-item:hover { background: var(--surface-hover) !important; }
+body.themed .collection .collection-item .badge {
+    float: none !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+    color: var(--faint) !important;
+    background: none !important;
+}
+body.themed .collection .collection-item .badge::after {
+    content: "chevron_right";
+    font-family: "Material Icons";
+    font-size: 20px;
+    line-height: 1;
+    font-feature-settings: "liga";
+}
+
+/* ---------- Buttons ---------- */
+
+body.themed .btn,
+body.themed .btn-small,
+body.themed .btn-large,
+body.themed button.btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 36px !important;
+    line-height: 36px !important;
+    padding: 0 14px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: var(--brand) !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: 0.1px !important;
+    box-shadow: none !important;
+    transition: background 0.15s, transform 0.1s;
+}
+body.themed .btn:hover { background: #2a7fe6 !important; }
+body.themed .btn:active { transform: scale(0.98); }
+body.themed .btn .material-icons {
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    float: none !important;
+}
+
+/* Secondary buttons: export / import / clear */
+body.themed .settings-action { margin: 0 0 8px !important; }
+body.themed .settings-action .btn {
+    width: 100%;
+    justify-content: flex-start;
+    height: 44px !important;
+    padding: 0 14px !important;
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    font-weight: 500 !important;
+}
+body.themed .settings-action .btn:hover { background: var(--surface-hover) !important; }
+body.themed .settings-action .btn .material-icons { color: var(--muted); }
+body.themed .settings-action .btn.modal-trigger .material-icons,
+body.themed .settings-action .btn.modal-trigger { color: var(--danger) !important; }
+
+body.themed .btn-flat {
+    height: 34px !important;
+    line-height: 34px !important;
+    padding: 0 12px !important;
+    border-radius: 9px !important;
+    color: var(--muted) !important;
+    background: transparent !important;
+    text-transform: none !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+body.themed .btn-flat:hover { background: rgba(255, 255, 255, 0.08) !important; color: var(--text) !important; }
+
+body.themed .reset-section,
+body.themed .open-mode-section {
+    border-top: 1px solid var(--line) !important;
+}
+
+/* ---------- Inputs ---------- */
+
+body.themed input[type="text"],
+body.themed input[type="number"],
+body.themed input[type="password"],
+body.themed select.browser-default,
+body.themed textarea,
+body.themed textarea.materialize-textarea {
+    width: 100%;
+    margin: 0 0 4px !important;
+    height: 38px;
+    padding: 8px 11px !important;
+    border: 1px solid var(--line-strong) !important;
+    border-radius: 9px !important;
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    font: inherit !important;
+    font-size: 13.5px !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.15s, background 0.15s;
+}
+body.themed textarea,
+body.themed textarea.materialize-textarea {
+    height: auto;
+    min-height: 76px;
+    line-height: 1.45 !important;
+    resize: vertical;
+}
+body.themed input[type="text"]:focus,
+body.themed input[type="number"]:focus,
+body.themed select.browser-default:focus,
+body.themed textarea:focus {
+    outline: none !important;
+    border-color: var(--brand-light) !important;
+    background: var(--surface-2) !important;
+}
+body.themed select.browser-default option { background: var(--surface-2); color: var(--text); }
+
+/* Materialize floating labels on textareas -> static labels */
+body.themed .input-field { margin: 0 0 14px !important; padding: 0 !important; }
+body.themed .input-field > label,
+body.themed .input-field > label.active {
+    position: static !important;
+    display: block !important;
+    transform: none !important;
+    margin: 0 0 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 600;
+    color: var(--muted) !important;
+    order: -1;
+}
+body.themed .input-field:has(> textarea),
+body.themed .input-field:has(> input) {
+    display: flex;
+    flex-direction: column;
+}
+body.themed .input-field .helper-text { margin: 4px 0 0 !important; position: static !important; }
+
+/* ---------- Checkboxes & radios ---------- */
+
+body.themed [type="checkbox"] + span:not(.lever),
+body.themed [type="radio"] + span {
+    color: var(--text) !important;
+    font-size: 13.5px !important;
+    padding-left: 30px !important;
+    line-height: 20px !important;
+    height: auto !important;
+}
+body.themed [type="checkbox"].filled-in:not(:checked) + span:not(.lever)::after {
+    border: 2px solid var(--faint) !important;
+    border-radius: 5px !important;
+    background: transparent !important;
+}
+body.themed [type="checkbox"].filled-in:checked + span:not(.lever)::after {
+    border: 2px solid var(--brand) !important;
+    border-radius: 5px !important;
+    background: var(--brand) !important;
+}
+body.themed [type="checkbox"].filled-in:checked + span:not(.lever)::before {
+    border-right-color: #fff !important;
+    border-bottom-color: #fff !important;
+}
+body.themed [type="radio"]:not(:checked) + span::before,
+body.themed [type="radio"]:not(:checked) + span::after { border-color: var(--faint) !important; }
+body.themed [type="radio"].with-gap:checked + span::before,
+body.themed [type="radio"].with-gap:checked + span::after,
+body.themed [type="radio"]:checked + span::after { border-color: var(--brand-light) !important; }
+body.themed [type="radio"].with-gap:checked + span::after,
+body.themed [type="radio"]:checked + span::after { background: var(--brand-light) !important; }
+
+body.themed form label,
+body.themed > label,
+body.themed p > label { margin-right: 14px; }
+
+/* ---------- Backends page: rule cards, chips, sliders ---------- */
+
+body.themed .card,
+body.themed .fallback-rule-card.card {
+    margin: 0 0 10px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: var(--surface) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+body.themed .card .card-content { padding: 12px 14px !important; }
+body.themed .card .card-title {
+    font-size: 13px !important;
+    font-weight: 650 !important;
+    color: var(--muted) !important;
+    line-height: 1.3 !important;
+    margin-bottom: 6px !important;
+}
+body.themed .card .btn-flat.right .material-icons,
+body.themed .card .btn-flat .material-icons { font-size: 19px; }
+body.themed .card .btn-flat:hover { color: var(--danger) !important; background: rgba(255, 122, 122, 0.12) !important; }
+
+body.themed .chip,
+body.themed .fallback-backends-list .chip {
+    height: 30px !important;
+    line-height: 30px !important;
+    padding: 0 12px !important;
+    margin: 0 6px 6px 0 !important;
+    border: 1px solid var(--line-strong) !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    color: var(--muted) !important;
+    font-size: 12.5px !important;
+    font-weight: 500;
+}
+body.themed .fallback-backends-list .chip[data-included="true"] {
+    border-color: transparent !important;
+    background: rgba(79, 149, 236, 0.18) !important;
+    color: var(--brand-light) !important;
+}
+
+body.themed input[type="range"] { accent-color: var(--brand-light); }
+body.themed .duration-value-display,
+body.themed .duration-slider-container { color: var(--muted); }
+
+/* ---------- Streaming providers page ---------- */
+
+body.themed .provider-item {
+    padding: 6px 12px 6px 7px !important;
+    border-radius: 999px !important;
+    font-size: 13px;
+}
+body.themed .provider-item.selected {
+    background: rgba(79, 149, 236, 0.18) !important;
+    border-color: rgba(79, 149, 236, 0.35) !important;
+    color: var(--text) !important;
+}
+body.themed .provider-item.available {
+    background: var(--surface) !important;
+    border-color: var(--line) !important;
+    color: var(--text) !important;
+}
+body.themed .provider-item.available:hover {
+    background: var(--surface-hover) !important;
+    border-color: var(--line-strong) !important;
+}
+body.themed .provider-name { font-size: 13px !important; font-weight: 500 !important; }
+body.themed .remove-btn { color: var(--muted) !important; }
+body.themed .remove-btn:hover { color: var(--danger) !important; }
+body.themed #resetProviders {
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--line-strong) !important;
+}
+body.themed #resetProviders:hover { background: var(--surface-hover) !important; }
+
+/* ---------- Misc page: theme picker ---------- */
+
+body.themed .bg-opt {
+    border-radius: 10px !important;
+    border: 2px solid var(--line-strong) !important;
+}
+body.themed .bg-opt.bg-selected,
+body.themed .bg-selected {
+    border-color: var(--brand-light) !important;
+    box-shadow: 0 0 0 3px rgba(79, 149, 236, 0.25) !important;
+}
+
+/* ---------- Dialog & toasts ---------- */
+
+body.themed .modal {
+    max-width: 300px;
+    padding: 0 !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    background: var(--surface-2) !important;
+    color: var(--text) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55) !important;
+}
+body.themed .modal::backdrop { background: rgba(0, 0, 0, 0.55); }
+body.themed .modal .modal-content { padding: 18px 18px 6px !important; }
+body.themed .modal .modal-content h4 { margin-top: 0 !important; }
+body.themed .modal .modal-content p { color: var(--muted); font-size: 13px; }
+body.themed .modal .modal-footer {
+    padding: 8px 10px 10px !important;
+    background: transparent !important;
+    height: auto !important;
+}
+body.themed #clearConfirmed { color: var(--danger) !important; }
+
+#toast-container .toast,
+.toast {
+    border-radius: 10px !important;
+    background: var(--surface-2) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--line-strong);
+    font-family: var(--font) !important;
+    font-size: 13px !important;
+    min-height: 40px !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ---------- Microphone permission page ---------- */
+
+body.themed.grant-mic {
+    width: auto;
+    height: auto;
+    min-height: 100vh;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+body.themed.grant-mic .text-center-hint {
+    max-width: 420px;
+    margin: 0 !important;
+    padding: 28px 30px !important;
+    border-radius: 16px;
+    background: var(--surface);
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-align: center;
+}
+body.themed.grant-mic .text-center-hint .material-icons {
+    display: block;
+    margin: 0 auto 10px;
+    font-size: 32px;
+    color: var(--brand-light);
+}
+
+/* ---------- Fixes ---------- */
+
+/* Icons inside buttons sit inline (materialize positions them absolutely) */
+body.themed .btn i,
+body.themed .btn.icon-left i,
+body.themed .btn.icon-right i {
+    position: static !important;
+    left: auto !important;
+}
+
+/* Vertically centre the chevron on the settings list */
+body.themed .collection .collection-item .badge {
+    display: inline-flex !important;
+    align-items: center;
+    line-height: 0 !important;
+}
+
+/* First section on a page starts right under the top bar */
+body.themed .section:first-of-type { padding-top: 0 !important; }
+body.themed .section:first-of-type > h5:first-child,
+body.themed #fallbackRulesSection > h5 { margin-top: 2px !important; }
+
+/* Centre the confirm dialog (popover) */
+body.themed .modal[popover] {
+    position: fixed !important;
+    inset: 0 !important;
+    margin: auto !important;
+    width: calc(100% - 48px) !important;
+    max-height: none !important;
+    height: fit-content !important;
+    transform: none !important;
+}
