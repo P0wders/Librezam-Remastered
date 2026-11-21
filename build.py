@@ -188,7 +188,9 @@ if __name__ == '__main__':
     base_dir = os.path.dirname(os.path.abspath(__file__))
     # For watch mode, don't exclude manifest files as they should trigger rebuilds
     # For normal build, exclude them to avoid copying them to dist
-    exclude_list = ['dist', 'manifest.json', 'build.py', '.git', '.gitignore', 'requirements.txt']
+    exclude_list = ['dist', 'manifest.json', 'build.py', '.git', '.gitignore', 'requirements.txt',
+                    # build-only files, never shipped in the extension
+                    'build.sh', 'BUILD.md', 'third_party', '.venv', 'node_modules']
     if not args.watch:
         # In non-watch mode, exclude manifest files from being copied
         exclude_list.extend(['manifest_chrome.json', 'manifest_firefox.json', 'manifest_ffdroid.json'])
