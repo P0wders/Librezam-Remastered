@@ -450,5 +450,21 @@
   "tapToRetry": {
     "message": "Cliquez sur le logo pour réessayer",
     "description": "Main popup"
+  },
+  "openInSpotifyApp": {
+    "message": "Ouvrir dans Spotify",
+    "description": "Spotify open mode"
+  },
+  "openSpotifyLinksIn": {
+    "message": "Ouvrir les liens Spotify dans",
+    "description": "Spotify open mode"
+  },
+  "spotifyOpenModeApp": {
+    "message": "L'application Spotify (navigateur si non installée)",
+    "description": "Spotify open mode"
+  },
+  "spotifyOpenModeBrowser": {
+    "message": "Le navigateur",
+    "description": "Spotify open mode"
   }
 }

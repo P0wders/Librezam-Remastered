@@ -18,6 +18,13 @@ async function init() {
     
     renderProviders()
     setupEventListeners()
+    setupSpotifyOpenMode()
+}
+
+async function setupSpotifyOpenMode() {
+    const select = document.getElementById('spotifyOpenMode')
+    select.value = await getStorage("spotifyOpenMode")
+    select.addEventListener('change', () => setStorage("spotifyOpenMode", select.value))
 }
 
 function renderProviders() {

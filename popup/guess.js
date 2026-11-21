@@ -410,6 +410,7 @@ async function writeResult(result){
 
 async function updateStreamingProviders(result) {
     const selectedProviders = await getStorage("selectedStreamingProviders")
+    const spotifyOpenMode = await getStorage("spotifyOpenMode")
     
     // Provider icons mapping
     // Clear existing providers
@@ -428,6 +429,16 @@ async function updateStreamingProviders(result) {
             img.className = 'circle responsive-img'
             img.title = `Search on ${STREAMING_PROVIDERS[providerId]?.name}`
             
+            // Spotify: try the desktop app first, fall back to the browser
+            const spotifyUri = providerId === "spotify" && spotifyOpenMode === "app" ? toSpotifyUri(result[providerId]) : null
+            if (spotifyUri) {
+                img.title = t("openInSpotifyApp") || img.title
+                providerElement.addEventListener("click", e => {
+                    e.preventDefault()
+                    openInAppOrBrowser(spotifyUri, result[providerId])
+                })
+            }
+
             providerElement.appendChild(img)
             streamProviders.appendChild(providerElement)
         }
@@ -653,4 +664,46 @@ async function writeStoredSong(song, changes) {
     currentHistories.forEach(h => {
         if (h.title === song.title && h.artist === song.artist) Object.assign(h, changes)
     })
+}
+
+// ---------- Open links in desktop apps ----------
+
+// https://open.spotify.com/track/ID      -> spotify:track:ID
+// https://open.spotify.com/search/QUERY  -> spotify:search:QUERY
+function toSpotifyUri(link) {
+    try {
+        const url = new URL(link)
+        if (url.hostname !== "open.spotify.com") return null
+        const [type, ...rest] = url.pathname.split("/").filter(Boolean)
+        if (!type || !rest.length) return null
+        if (type === "search") return `spotify:search:${rest.join("/")}`
+        if (/^(track|album|artist|playlist|episode|show)$/.test(type)) return `spotify:${type}:${rest[0]}`
+        return null
+    } catch {
+        return null
+    }
+}
+
+// Launch an app link. If the app takes it, the popup loses focus (and usually
+// closes). If nothing happens within the timeout, open the web link instead.
+function openInAppOrBrowser(appUrl, webUrl, timeout = 1200) {
+    let handled = false
+    const markHandled = () => { handled = true }
+    window.addEventListener("blur", markHandled)
+    document.addEventListener("visibilitychange", markHandled)
+    window.addEventListener("pagehide", markHandled)
+
+    // A hidden iframe keeps the popup intact if the protocol isn't registered
+    const frame = document.createElement("iframe")
+    frame.style.display = "none"
+    frame.src = appUrl
+    document.body.appendChild(frame)
+
+    setTimeout(() => {
+        window.removeEventListener("blur", markHandled)
+        document.removeEventListener("visibilitychange", markHandled)
+        window.removeEventListener("pagehide", markHandled)
+        frame.remove()
+        if (!handled) chrome.tabs.create({ url: webUrl })
+    }, timeout)
 }

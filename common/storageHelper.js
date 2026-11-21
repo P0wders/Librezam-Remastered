@@ -18,7 +18,8 @@ export const Defaults = {
     sk: "da36b574-e869-41f5-8512-bc261615b84e",
     language: "auto",
     captureMethod: "tabCapture",
-    showAutomaticRecognitionNotifications: true
+    showAutomaticRecognitionNotifications: true,
+    spotifyOpenMode: "app"
 }
 
 export async function getStorage(key) {

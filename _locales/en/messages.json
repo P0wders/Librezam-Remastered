@@ -454,5 +454,21 @@
   "tapToRetry": {
     "message": "Click the logo to try again",
     "description": "Main popup"
+  },
+  "openInSpotifyApp": {
+    "message": "Open in Spotify",
+    "description": "Spotify open mode"
+  },
+  "openSpotifyLinksIn": {
+    "message": "Open Spotify links in",
+    "description": "Spotify open mode"
+  },
+  "spotifyOpenModeApp": {
+    "message": "Spotify app (browser if not installed)",
+    "description": "Spotify open mode"
+  },
+  "spotifyOpenModeBrowser": {
+    "message": "Browser",
+    "description": "Spotify open mode"
   }
 }
