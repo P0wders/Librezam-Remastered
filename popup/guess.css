@@ -319,7 +319,6 @@ body[data-state="result"] #result { display: block; animation: rise 0.35s ease; 
     background: var(--surface-2);
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
 }
-#coverArt:not([src]), #coverArt[src=""] { visibility: hidden; }
 
 .info { margin-top: 14px; max-width: 100%; }
 .result.title {
@@ -450,3 +449,13 @@ body[data-state="result"] #result { display: block; animation: rise 0.35s ease; 
     font-size: 12.5px;
     color: var(--faint);
 }
+
+/* Missing / broken cover: dimmed Librezam logo */
+img.placeholder {
+    object-fit: contain;
+    padding: 6px;
+    background: var(--surface-2);
+    opacity: 0.4;
+    filter: grayscale(0.25);
+}
+#coverArt.placeholder { padding: 26px; box-shadow: none; }

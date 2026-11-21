@@ -227,7 +227,6 @@ function renderHistoryTable(histories = currentHistories) {
         const dateStr = history.timestamp ? new Date(history.timestamp).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""
 
         card.innerHTML = `
-            <img class="history-card-cover" loading="lazy" alt="" ${history.art ? `src="${escapeStr(history.art)}"` : ""}>
             <div class="history-card-main-info">
                 <div class="history-card-title">${escapeStr(history.title)}</div>
                 <div class="history-card-artist">${escapeStr(history.artist)}</div>
@@ -237,6 +236,12 @@ function renderHistoryTable(histories = currentHistories) {
                 <i class="material-icons">delete_outline</i>
             </button>
         `
+
+        const cover = document.createElement("img")
+        cover.className = "history-card-cover"
+        cover.alt = ""
+        setCover(cover, history)
+        card.prepend(cover)
 
         container.appendChild(card)
     })
@@ -383,14 +388,13 @@ async function sendMessagePromises(request) {
 
 async function writeResult(result){
     // Cover art + blurred backdrop
-    const cover = document.getElementById("coverArt")
-    if (result.art) {
-        cover.src = result.art
-        surfaceContainer.style.setProperty("--art", `url("${result.art.replace(/["\\\n]/g, encodeURIComponent)}")`)
-    } else {
-        cover.removeAttribute("src")
-        surfaceContainer.style.removeProperty("--art")
-    }
+    setCover(document.getElementById("coverArt"), result, art => {
+        if (art) {
+            surfaceContainer.style.setProperty("--art", `url("${art.replace(/["\\\n]/g, encodeURIComponent)}")`)
+        } else {
+            surfaceContainer.style.removeProperty("--art")
+        }
+    })
 
     // Update basic info
     let elms = ["title", "artist", "album"]
@@ -547,4 +551,106 @@ async function recordFromMicrophone(times) {
     } catch(error) {
         throw new Error(`Microphone access failed: ${error.message}`)
     }
+}
+
+// ---------- Cover art: placeholder + repair ----------
+
+const PLACEHOLDER_COVER = "/images/icon.png"
+const artLookups = new Map() // "title|artist" -> Promise<string|null>
+
+// Show a song's cover in <img>, falling back to a dimmed Librezam logo.
+// If the cover is missing or broken, look it up once and save it to history.
+function setCover(img, song, onArt = () => {}) {
+    img.dataset.song = songKey(song)
+    const showPlaceholder = () => {
+        img.onerror = null
+        img.src = PLACEHOLDER_COVER
+        img.classList.add("placeholder")
+        onArt(null)
+    }
+    const showArt = url => {
+        img.classList.remove("placeholder")
+        img.onerror = () => {
+            showPlaceholder()
+            repairCover(song, url)
+        }
+        img.src = url
+        onArt(url)
+    }
+
+    if (song.art) {
+        showArt(song.art)
+    } else {
+        showPlaceholder()
+        repairCover(song, null)
+    }
+
+    // When a repaired cover arrives, swap it in (if this <img> still shows that song)
+    function repairCover(song, brokenUrl) {
+        findCover(song, brokenUrl).then(url => {
+            if (url && url !== brokenUrl && img.isConnected && img.dataset.song === songKey(song)) showArt(url)
+        })
+    }
+}
+
+function songKey(song) {
+    return `${song.title}|${song.artist}`
+}
+
+function findCover(song, brokenUrl) {
+    if (song.artLookupFailed && (song.art || null) === brokenUrl) return Promise.resolve(null)
+    const key = songKey(song)
+    if (!artLookups.has(key)) {
+        artLookups.set(key, queued(() => lookupCover(song)).then(async url => {
+            await updateStoredSong(song, url ? { art: url, artLookupFailed: false } : { artLookupFailed: true })
+            return url
+        }).catch(e => {
+            console.log("Cover lookup failed:", e)
+            return null
+        }))
+    }
+    return artLookups.get(key)
+}
+
+// Search the iTunes catalogue for a cover (no API key needed)
+async function lookupCover(song) {
+    if (!song.title) return null
+    const clean = str => (str || "").replace(/\s*[\(\[].*?[\)\]]/g, "").trim()
+    const queries = [`${song.title} ${song.artist || ""}`, `${clean(song.title)} ${clean(song.artist)}`]
+    for (const term of [...new Set(queries.map(q => q.trim()))]) {
+        const url = `https://itunes.apple.com/search?media=music&entity=song&limit=1&term=${encodeURIComponent(term)}`
+        const res = await fetch(url)
+        if (!res.ok) continue
+        const art = (await res.json()).results?.[0]?.artworkUrl100
+        if (art) return art.replace(/\/\d+x\d+bb\./, "/600x600bb.")
+    }
+    return null
+}
+
+// Run lookups one at a time, spaced out, to stay polite with the iTunes API
+let lookupQueue = Promise.resolve()
+function queued(task) {
+    const run = lookupQueue.then(task)
+    lookupQueue = run.catch(() => {}).then(() => new Promise(r => setTimeout(r, 250)))
+    return run
+}
+
+// Serialise history writes so parallel updates don't overwrite each other
+let storageQueue = Promise.resolve()
+function updateStoredSong(song, changes) {
+    Object.assign(song, changes)
+    storageQueue = storageQueue.then(() => writeStoredSong(song, changes)).catch(e => console.log(e))
+    return storageQueue
+}
+
+async function writeStoredSong(song, changes) {
+    const histories = await getStorage("histories") || []
+    const stored = histories.find(h => h.title === song.title && h.artist === song.artist)
+    if (!stored) return
+    Object.assign(stored, changes)
+    await setStorage("histories", histories)
+    // keep in-memory copies in sync
+    currentHistories.forEach(h => {
+        if (h.title === song.title && h.artist === song.artist) Object.assign(h, changes)
+    })
 }
