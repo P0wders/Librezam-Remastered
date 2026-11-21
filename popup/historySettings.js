@@ -1,10 +1,12 @@
 import { getStorage, setStorage, Defaults } from "../common/storageHelper.js"
 import { t } from "./i18n.js"
+import { uiAlert, uiConfirm } from "./ui.js"
 
 // Clear History
-M.Modal.init(modalConfirmClear, null);
-clearConfirmed.addEventListener("click", () => {
-    setStorage("histories", [])
+clearHistories.addEventListener("click", async () => {
+    if (await uiConfirm(t("areYouSureToClearHistories"), { danger: true })) {
+        await setStorage("histories", [])
+    }
 });
 
 // Export CSV
@@ -50,7 +52,7 @@ exportAllData.addEventListener("click", async () => {
         URL.revokeObjectURL(url)
     } catch (error) {
         console.error("Export failed:", error)
-        alert(t('settingsExportFailed') + error.message)
+        await uiAlert(t('settingsExportFailed') + error.message)
     }
 });
 
@@ -74,7 +76,7 @@ importAllData.addEventListener("click", () => {
             }
             
             // Confirm import
-            const confirmed = confirm(t('confirmOverwritingSettings', [
+            const confirmed = await uiConfirm(t('confirmOverwritingSettings', [
                 data._metadata.exportDate,
                 data.histories ? data.histories.length : 0,
             ]))
@@ -88,11 +90,11 @@ importAllData.addEventListener("click", () => {
                 }
             }
             
-            alert(t('settingsImportCompleted'))
+            await uiAlert(t('settingsImportCompleted'))
             
         } catch (error) {
             console.error("Import failed:", error)
-            alert(t('settingsImportFailed') + error.message)
+            await uiAlert(t('settingsImportFailed') + error.message)
         }
     })
     

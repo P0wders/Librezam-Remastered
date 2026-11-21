@@ -1,0 +1,290 @@
+/* Librezam shared components (used by the popup and every settings page) */
+
+:root {
+    --ui-brand: var(--brand, #1a70d8);
+    --ui-brand-light: var(--brand-light, #4f95ec);
+    --ui-surface: var(--surface, #171a21);
+    --ui-surface-2: var(--surface-2, #1f232c);
+    --ui-surface-hover: var(--surface-hover, #262b36);
+    --ui-line: rgba(255, 255, 255, 0.13);
+    --ui-text: var(--text, #f1f3f7);
+    --ui-muted: var(--muted, #98a1b0);
+    --ui-danger: #ff7a7a;
+    --ui-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---------- Global resets for browser defaults ---------- */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ui-surface-hover) transparent;
+    -webkit-tap-highlight-color: transparent;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ui-surface-hover); border-radius: 8px; }
+
+::selection { background: rgba(79, 149, 236, 0.35); color: #fff; }
+
+:focus { outline: none; }
+:focus-visible {
+    outline: 2px solid var(--ui-brand-light) !important;
+    outline-offset: 2px;
+}
+
+::placeholder { color: var(--ui-muted); opacity: 0.7; }
+
+img { -webkit-user-drag: none; user-select: none; }
+
+/* Textareas: no resize grip */
+textarea { resize: none !important; }
+
+/* Number fields: no spinner arrows */
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Search fields: no native clear button */
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+/* ---------- Dropdown ---------- */
+
+.ui-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+    clip-path: inset(50%) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+.ui-select {
+    position: relative;
+    width: 100%;
+    margin: 0 0 4px;
+    font-family: var(--ui-font);
+}
+
+.ui-select-button {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    height: 38px;
+    padding: 0 8px 0 11px !important;
+    border: 1px solid var(--ui-line) !important;
+    border-radius: 9px !important;
+    background: var(--ui-surface) !important;
+    color: var(--ui-text) !important;
+    font: inherit;
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.ui-select-button:hover { background: var(--ui-surface-hover) !important; }
+.ui-select.open .ui-select-button { border-color: var(--ui-brand-light) !important; }
+.ui-select-button:disabled { opacity: 0.5; cursor: default; }
+.ui-select-label { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-select-chevron {
+    font-size: 20px !important;
+    color: var(--ui-muted);
+    transition: transform 0.18s ease;
+}
+.ui-select.open .ui-select-chevron { transform: rotate(180deg); }
+
+.ui-select-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    max-height: 220px;
+    margin: 0 !important;
+    padding: 5px !important;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--ui-surface-2);
+    border: 1px solid var(--ui-line);
+    border-radius: 11px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.12s ease, transform 0.12s ease, visibility 0s linear 0.12s;
+}
+.ui-select.up .ui-select-menu {
+    top: auto;
+    bottom: calc(100% + 5px);
+    transform: translateY(4px);
+}
+.ui-select.open .ui-select-menu {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.ui-select-menu li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 7px 10px 7px 30px;
+    border-radius: 7px;
+    font-size: 13.5px;
+    line-height: 1.3;
+    color: var(--ui-text);
+    cursor: pointer;
+    position: relative;
+    list-style: none;
+}
+.ui-select-menu li::before { display: none !important; }
+.ui-select-menu li.active { background: var(--ui-surface-hover); }
+.ui-select-menu li.selected { color: var(--ui-brand-light); font-weight: 600; }
+.ui-select-menu li.selected::after {
+    content: "check";
+    font-family: "Material Icons";
+    font-feature-settings: "liga";
+    font-size: 17px;
+    position: absolute;
+    left: 8px;
+}
+.ui-select-menu li.disabled { opacity: 0.4; cursor: default; }
+
+/* ---------- Slider ---------- */
+
+input[type="range"].ui-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 22px;
+    margin: 4px 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    cursor: pointer;
+    --pct: 50%;
+}
+input[type="range"].ui-range::-moz-range-track {
+    height: 5px;
+    border: 0;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.12);
+}
+input[type="range"].ui-range::-moz-range-progress {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--ui-brand-light);
+}
+input[type="range"].ui-range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: 3px solid var(--ui-brand-light);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+input[type="range"].ui-range::-webkit-slider-runnable-track {
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--ui-brand-light) var(--pct), rgba(255, 255, 255, 0.12) var(--pct)) !important;
+}
+input[type="range"].ui-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    margin-top: -5.5px;
+    border: 3px solid var(--ui-brand-light);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+input[type="range"].ui-range:active::-moz-range-thumb { transform: scale(1.12); }
+input[type="range"].ui-range:active::-webkit-slider-thumb { transform: scale(1.12); }
+/* materialize adds a floating "thumb" bubble next to range inputs */
+.range-field .thumb, input[type="range"] + .thumb { display: none !important; }
+
+/* ---------- Tooltip ---------- */
+
+.ui-tooltip {
+    position: fixed;
+    z-index: 2000;
+    max-width: 240px;
+    padding: 6px 9px;
+    border: 1px solid var(--ui-line);
+    border-radius: 8px;
+    background: var(--ui-surface-2);
+    color: var(--ui-text);
+    font-family: var(--ui-font);
+    font-size: 12px;
+    line-height: 1.35;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    overflow-wrap: anywhere;
+}
+.ui-tooltip.below { transform: translateY(-3px); }
+.ui-tooltip.show { opacity: 1; transform: none; }
+
+/* ---------- Dialog ---------- */
+
+.ui-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.ui-dialog-overlay.show { opacity: 1; }
+.ui-dialog {
+    width: 100%;
+    max-width: 320px;
+    padding: 18px 16px 12px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    background: var(--ui-surface-2);
+    color: var(--ui-text);
+    font-family: var(--ui-font);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    transform: scale(0.97);
+    transition: transform 0.15s ease;
+}
+.ui-dialog-overlay.show .ui-dialog { transform: none; }
+.ui-dialog-title { margin: 0 0 6px; font-size: 15px; font-weight: 650; }
+.ui-dialog-message {
+    margin: 0 0 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--ui-muted);
+    white-space: pre-line;
+}
+.ui-dialog-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.ui-dialog-btn {
+    height: 34px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--ui-muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.ui-dialog-btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--ui-text); }
+.ui-dialog-btn.primary { background: var(--ui-brand); color: #fff; }
+.ui-dialog-btn.primary:hover { background: #2a7fe6; }
+.ui-dialog-btn.danger { background: rgba(255, 122, 122, 0.16); color: var(--ui-danger); }
+.ui-dialog-btn.danger:hover { background: rgba(255, 122, 122, 0.24); }
