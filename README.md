@@ -1,12 +1,22 @@
 <p align="center">
-  <img width="180" src="https://github.com/user-attachments/assets/6d7161dd-8e40-4f5f-9163-9ba34492655b">
-  <h1 align="center">Librezam</h1>
-  <div align="center">Song recognition webextension using Shazam API</div>
+  <img width="180" src="images/icon.png">
+  <h1 align="center">Librezam Remastered</h1>
+  <div align="center">Song recognition webextension using Shazam API — with a redesigned interface</div>
 </p>
 
-[![Firefox](https://extensionworkshop.com/assets/img/documentation/publish/get-the-addon-178x60px.dad84b42.png)](https://addons.mozilla.org/firefox/addon/librezam/)
-[![Chrome](https://developer.chrome.com/static/docs/webstore/branding/image/206x58-chrome-web-bcb82d15b2486.png)](https://chrome.google.com/webstore/detail/kolhjbddamlepljhchmgmlabaanmpegk)
-[![Edge](https://learn.microsoft.com/ja-jp/microsoft-edge/extensions/publish/add-ons-badge-images/microsoft-edge-add-ons-badge.png)](https://microsoftedge.microsoft.com/addons/detail/librezam/jcopjlccekeaebloopjihokfiadhjnbg)
+> **Librezam Remastered is a fork of [Librezam](https://github.com/FoxRefire/Librezam) by [FoxRefire](https://github.com/FoxRefire).**
+> It is not affiliated with the original project or with Shazam/Apple, and is distributed under the same license (AGPL-3.0).
+> To install the original extension, see the [Librezam repository](https://github.com/FoxRefire/Librezam).
+
+## What's new in Remastered
+- Redesigned popup: the Librezam logo as a big listen button, equalizer while listening, result card with cover art, compact history
+- Redesigned settings pages, with custom dropdowns, slider, tooltips and dialogs (no default browser widgets)
+- Missing or broken cover art is looked up via the iTunes Search API, with a dimmed-logo fallback
+- Spotify links can open in the Spotify desktop app, falling back to the browser (setting under Streaming Providers)
+
+### Notes
+- The ACRCloud "Use default credentials" option relies on the original project's keys and does not work in this fork; use your own ACRCloud keys instead.
+- When a cover is missing, the song's title and artist are sent to Apple's iTunes Search API to find one.
 
 ## What is it?
 This is a browser extension that uses Shazam's internal API to recognize the music playing in the current tab.
