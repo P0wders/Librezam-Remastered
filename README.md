@@ -26,7 +26,7 @@ Requests unrelated to music recognition, such as telemetry, will not be made.
 This is unofficial project and is not affiliated or supported by *Shazam ltd.*
 
 ## Screenshot
-<p align="center"><img src="docs/screenshot.png" width="720" alt="Librezam Remastered popup showing a recognised song, streaming links and history"></p>
+<p align="center"><img src="docs/screenshot.png" width="800" alt="Librezam Remastered popup showing a recognised song, streaming links and history"></p>
 
 
 ## Third-party libraries/Referenced codes
