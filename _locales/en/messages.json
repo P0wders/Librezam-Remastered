@@ -442,5 +442,17 @@
   "settingsImportFailed": {
     "message": "Import failed: ",
     "description": "Message shown when settings import failed"
+  },
+  "listen": {
+    "message": "Listen",
+    "description": "Main popup"
+  },
+  "listenAgain": {
+    "message": "Listen again",
+    "description": "Main popup"
+  },
+  "tapToRetry": {
+    "message": "Click the logo to try again",
+    "description": "Main popup"
   }
 }

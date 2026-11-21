@@ -1,92 +1,84 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <link href="/libs/material-icons/material-icons.css" rel="stylesheet">
-        <link rel="stylesheet" href="/libs/materialize/materialize.min.css"/>
-        <link href="popup.css" rel="stylesheet">
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link href="/libs/material-icons/material-icons.css" rel="stylesheet">
+        <link href="guess.css" rel="stylesheet">
     </head>
-    <body class="main">
-        <div id="surfaceContainer" class="center">
-            <!-- Dropdown trigger -->
-            <div id="menuButtonContainer">
-                <a id="menuButton" class="roundButton dropdown-trigger" href='#' data-target="dropdownMenu">
-                    <i class="material-icons">more_vert</i>
-                </a>
-            </div>
-
-            <!-- Dropdown Structure -->
-            <ul id='dropdownMenu' class='dropdown-content'>
-                <li><a href="/popup/settingsMenu.html"><i class="material-icons left">settings</i><span data-i18n="settings">Settings</span></a></li>
-                <li class="divider" tabindex="-1"></li>
-                <li>
-                    <label class="auto-mode-toggle">
-                        <i class="material-icons left">flash_auto</i>
-                        <input id="isAutoMode" class="filled-in" type="checkbox">
-                        <span data-i18n="autoRecognition">Auto recognition</span>
-                    </label>
-                </li>
-                <li class="divider" tabindex="-1"></li>
-                <li><a href="#" id="micRecognition"><i class="material-icons left">mic</i><span data-i18n="recognizeFromMicrophone">Recognize from Microphone</span></a></li>
-            </ul>
-
-            <!-- Banner with spinner and notification -->
-            <div id="banner">
-                <div id="circler" class="preloader-wrapper big active">
-                    <div class="spinner-layer spinner-blue-only">
-                    <div class="circle-clipper left">
-                        <div class="circle"></div>
-                    </div><div class="gap-patch">
-                        <div class="circle"></div>
-                    </div><div class="circle-clipper right">
-                        <div class="circle"></div>
-                    </div>
-                    </div>
+    <body data-state="idle">
+        <section id="surfaceContainer">
+            <!-- Top bar -->
+            <header id="topBar">
+                <div class="brand">
+                    <img src="/images/icon.png" alt="">
+                    <span>Librezam</span>
                 </div>
+                <div id="menuButtonContainer">
+                    <button id="menuButton" class="iconButton" aria-haspopup="true" aria-expanded="false">
+                        <i class="material-icons">more_vert</i>
+                    </button>
+                    <ul id="dropdownMenu" role="menu">
+                        <li><a href="/popup/settingsMenu.html" role="menuitem"><i class="material-icons">settings</i><span data-i18n="settings">Settings</span></a></li>
+                        <li><a href="#" id="micRecognition" role="menuitem"><i class="material-icons">mic</i><span data-i18n="recognizeFromMicrophone">Recognize from Microphone</span></a></li>
+                        <li class="divider"></li>
+                        <li>
+                            <label class="switchRow">
+                                <i class="material-icons">flash_auto</i>
+                                <span data-i18n="autoRecognition">Auto recognition</span>
+                                <input id="isAutoMode" type="checkbox">
+                                <span class="switch" aria-hidden="true"></span>
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </header>
 
-                <div id="notification"></div>
+            <!-- Listening / idle / error view -->
+            <div id="banner">
+                <button id="listenButton" title="Listen" data-i18n-title="listen">
+                    <img src="/images/icon.png" alt="Listen">
+                </button>
+                <div id="circler" class="eq" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div id="notification" aria-live="polite"></div>
+                <button id="micButton" class="pill">
+                    <i class="material-icons">mic</i><span data-i18n="recognizeFromMicrophone">Recognize from Microphone</span>
+                </button>
             </div>
-            
-            <!-- Result -->
+
+            <!-- Result view -->
             <div id="result">
-                <div id="resultTable" style="display:none;">
-                    <div>
-                        <div class="category" data-i18n="title">Title</div>
+                <div id="resultTable">
+                    <img id="coverArt" alt="">
+                    <div class="info">
                         <div class="result title"></div>
-                    </div>
-                    <div>
-                        <div class="category" data-i18n="artist">Artist</div>
                         <div class="result artist"></div>
-                    </div>
-                    <div>
-                        <div class="category" data-i18n="album">Album</div>
                         <div class="result album"></div>
                     </div>
                 </div>
-                
-                <div id="streamProvidersContainer" style="display:none;">
-                    <div id="streamProviders">
-                    <!-- Streaming providers will be dynamically added here -->
-                    </div>
+                <div id="streamProvidersContainer">
+                    <div id="streamProviders"></div>
+                    <button id="listenAgain" class="iconButton" title="Listen again" data-i18n-title="listenAgain">
+                        <i class="material-icons">replay</i>
+                    </button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <hr>
-        <div id="historyControls">
-            <button id="sortByTitle" class="btn-small waves-effect waves-light">
-                <span data-i18n="title">Title</span> <i class="material-icons sort-icon">unfold_more</i>
-            </button>
-            <button id="sortByArtist" class="btn-small waves-effect waves-light">
-                <span data-i18n="artist">Artist</span> <i class="material-icons sort-icon">unfold_more</i>
-            </button>
-            <button id="sortByDate" class="btn-small waves-effect waves-light">
-                <span data-i18n="date">Date</span> <i class="material-icons sort-icon">keyboard_arrow_down</i>
-            </button>
-        </div>
-        <div id="historyCards" class="history-cards-container">
-            <!-- History cards will be dynamically added here -->
-        </div>
-        <script src="/libs/materialize/materialize.min.js"></script>
+        <section id="historySection">
+            <div id="historyHeader">
+                <h2 data-i18n="history">History</h2>
+                <div id="historyControls">
+                    <button id="sortByTitle" class="chip"><span data-i18n="title">Title</span><i class="material-icons sort-icon">unfold_more</i></button>
+                    <button id="sortByArtist" class="chip"><span data-i18n="artist">Artist</span><i class="material-icons sort-icon">unfold_more</i></button>
+                    <button id="sortByDate" class="chip active"><span data-i18n="date">Date</span><i class="material-icons sort-icon">keyboard_arrow_down</i></button>
+                </div>
+            </div>
+            <div id="historyCards" class="history-cards-container"></div>
+        </section>
+
         <script src="./i18n.js" type="module"></script>
         <script src="./guess.js" type="module"></script>
         <script src="./syncBackground.js" type="module"></script>

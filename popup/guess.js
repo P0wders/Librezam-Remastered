@@ -3,6 +3,8 @@ import { getStorage, setStorage } from "../common/storageHelper.js"
 import { t } from "./i18n.js"
 import { STREAMING_PROVIDERS } from "../common/streamingProviders.js"
 
+let isBusy = false
+
 init()
 
 function init() {
@@ -12,27 +14,63 @@ function init() {
         startTabRecognition()
     }
 
-    // Initialize dropdown menu
-    M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'));
-    
+    menuController()
+    listenController()
     writeHistory()
     autoModeController()
     micRecognitionController()
 }
 
+// UI state: "idle" | "listening" | "result" | "error"
+function setState(state) {
+    document.body.dataset.state = state
+}
+
+function menuController() {
+    const button = document.getElementById("menuButton")
+    const menu = document.getElementById("dropdownMenu")
+    const close = () => {
+        menu.classList.remove("open")
+        button.setAttribute("aria-expanded", "false")
+    }
+    button.addEventListener("click", e => {
+        e.stopPropagation()
+        const open = menu.classList.toggle("open")
+        button.setAttribute("aria-expanded", String(open))
+    })
+    document.addEventListener("click", e => {
+        if (!menu.contains(e.target) || e.target.closest("a")) close()
+    })
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") close()
+    })
+}
+
+function listenController() {
+    document.getElementById("listenButton").addEventListener("click", () => {
+        if (!isBusy) startTabRecognition()
+    })
+    document.getElementById("listenAgain").addEventListener("click", () => {
+        if (!isBusy) startTabRecognition()
+    })
+    document.getElementById("micButton").addEventListener("click", () => {
+        if (!isBusy) startMicRecognition()
+    })
+}
+
 async function startTabRecognition() {
-    // Initialize UI for recognition
-    circler.style.opacity = "0"
-    circler.style.display = "flex"
-    circler.style.transition = "opacity 0.3s ease"
-    setTimeout(() => {
-        circler.style.opacity = "1"
-    }, 50)
-    
-    resultTable.style.display = "none"
-    streamProvidersContainer.style.display = "none"
-    notification.classList.remove("show", "pulse", "recognizing")
-    
+    isBusy = true
+    try {
+        await runTabRecognition()
+    } finally {
+        isBusy = false
+    }
+}
+
+async function runTabRecognition() {
+    getTabId.tabId = null
+    showStatus(t("listening"))
+
     let fallbackRules = await getStorage("fallbackRules")
     let times = Object.keys(fallbackRules).map(t => Number(t))
     let backendsMap = Object.values(fallbackRules)
@@ -151,11 +189,6 @@ async function getResult(audios, backend) {
             await writeResult(result)
             await saveHistory(result)
             await writeHistory() // Update history display immediately
-            banner.classList.remove("blur")
-            notification.style.display = "none"
-            circler.style.opacity = "0"
-            circler.style.transition = "opacity 0.3s ease"
-    
             return true
         } catch(e) {
             console.log(e)
@@ -180,34 +213,31 @@ function renderHistoryTable(histories = currentHistories) {
     container.innerHTML = ""
     const escapeStr = t => new Option(t).innerHTML
 
+    if (!histories.length) {
+        container.innerHTML = `<div class="history-empty">—</div>`
+        return
+    }
+
     histories.forEach((history, index) => {
         const card = document.createElement("div")
-        card.className = "history-card"
+        card.className = "history-card detail-btn"
         card.dataset.index = index
-        
-        // Format date
-        const dateStr = history.timestamp ? new Date(history.timestamp).toLocaleDateString() : ""
-        
+        card.title = [history.title, history.artist, history.album].filter(Boolean).join(" · ")
+
+        const dateStr = history.timestamp ? new Date(history.timestamp).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""
+
         card.innerHTML = `
-            <div class="history-card-header">
-                <div class="history-card-cover" style="background-image: url('${history.art || ''}')"></div>
-                <div class="history-card-main-info">
-                    <div class="history-card-title">${escapeStr(history.title)}</div>
-                    <div class="history-card-artist">${escapeStr(history.artist)}</div>
-                    ${history.album ? `<div class="history-card-album">${escapeStr(history.album)}</div>` : ''}
-                    ${dateStr ? `<div class="history-card-date">${dateStr}</div>` : ''}
-                </div>
-                <div class="history-card-actions">
-                    <button class="roundButton history-card-btn detail-btn" data-index="${index}">
-                        <i class="material-icons">visibility</i>
-                    </button>
-                    <button class="roundButton history-card-btn delete-btn" data-index="${index}">
-                        <i class="material-icons">delete</i>
-                    </button>
-                </div>
+            <img class="history-card-cover" loading="lazy" alt="" ${history.art ? `src="${escapeStr(history.art)}"` : ""}>
+            <div class="history-card-main-info">
+                <div class="history-card-title">${escapeStr(history.title)}</div>
+                <div class="history-card-artist">${escapeStr(history.artist)}</div>
             </div>
+            ${dateStr ? `<div class="history-card-date">${escapeStr(dateStr)}</div>` : ''}
+            <button class="iconButton delete-btn" data-index="${index}">
+                <i class="material-icons">delete_outline</i>
+            </button>
         `
-        
+
         container.appendChild(card)
     })
 }
@@ -237,17 +267,15 @@ function setupHistoryControls() {
     // Detail and delete buttons - use event delegation to avoid duplicates
     if (!document.hasHistoryControlsListener) {
         document.addEventListener("click", async (e) => {
-            if (e.target.closest(".detail-btn")) {
-                const index = parseInt(e.target.closest(".detail-btn").dataset.index)
-                await writeResult(currentHistories[index])
-
-                if(notification.style.color === "orange") {
-                    notification.style.display = "none"
-                    banner.classList.remove("blur")
-                }
-            } else if (e.target.closest(".delete-btn")) {
+            if (e.target.closest(".delete-btn")) {
+                e.stopPropagation()
                 const index = parseInt(e.target.closest(".delete-btn").dataset.index)
                 await deleteHistoryItem(index)
+            } else if (e.target.closest(".detail-btn")) {
+                if (isBusy) return
+                const index = parseInt(e.target.closest(".detail-btn").dataset.index)
+                await writeResult(currentHistories[index])
+                document.getElementById("surfaceContainer").scrollIntoView({ behavior: "smooth" })
             }
         })
         document.hasHistoryControlsListener = true
@@ -295,9 +323,11 @@ function updateSortIndicators() {
     document.querySelectorAll('.sort-icon').forEach(icon => {
         icon.textContent = 'unfold_more'
     })
-    
+    document.querySelectorAll('#historyControls .chip').forEach(chip => chip.classList.remove('active'))
+
     // Set the active sort icon
     const activeButton = document.getElementById(`sortBy${currentSort.field.charAt(0).toUpperCase() + currentSort.field.slice(1)}`)
+    activeButton.classList.add('active')
     const activeIcon = activeButton.querySelector('.sort-icon')
     
     if (currentSort.ascending) {
@@ -352,34 +382,26 @@ async function sendMessagePromises(request) {
 }
 
 async function writeResult(result){
-    menuButtonContainer.classList.add("tint")
-
-    // Smooth fade in for results
-    resultTable.style.opacity = "0"
-    resultTable.style.display = "flex"
-    resultTable.style.transition = "opacity 0.5s ease"
-    streamProvidersContainer.style.display = "flex"
-    streamProviders.style.opacity = "0"
-    streamProviders.style.transition = "opacity 0.5s ease"
-    
-    // Trigger fade in
-    setTimeout(() => {
-        resultTable.style.opacity = "1"
-        streamProviders.style.opacity = "1"
-    }, 50)
-
-    // Always show coverart
-    surfaceContainer.style.backgroundImage = `url('${result.art}')`
+    // Cover art + blurred backdrop
+    const cover = document.getElementById("coverArt")
+    if (result.art) {
+        cover.src = result.art
+        surfaceContainer.style.setProperty("--art", `url("${result.art.replace(/["\\\n]/g, encodeURIComponent)}")`)
+    } else {
+        cover.removeAttribute("src")
+        surfaceContainer.style.removeProperty("--art")
+    }
 
     // Update basic info
     let elms = ["title", "artist", "album"]
     elms.forEach(out => {
         let outElm = document.querySelector(`.result.${out}`)
-        outElm.innerText = result[out]
+        outElm.innerText = result[out] || ""
     })
 
     // Update streaming providers
     await updateStreamingProviders(result)
+    setState("result")
 }
 
 async function updateStreamingProviders(result) {
@@ -423,46 +445,30 @@ async function saveHistory(result){
 }
 
 function showError(msg) {
-    circler.style.display = "none"
-    notification.innerText = msg
-    notification.style.display = ""
-    notification.style.color = "orange"
-    notification.classList.remove("show", "pulse", "recognizing")
-    // Trigger reflow to restart animation
-    void notification.offsetWidth
-    notification.classList.add("show", "text-error")
-    banner.classList.add("blur")
+    notification.textContent = msg
+    const hint = document.createElement("span")
+    hint.className = "hint"
+    hint.textContent = t("tapToRetry")
+    notification.appendChild(hint)
+    setState("error")
 }
 
 function showStatus(msg) {
-    if (msg) {
-        // Check if message ends with "..." or similar pattern
-        const baseMessage = msg.replace(/\.+$/, '')
-        const hasDots = msg.endsWith('...') || msg.endsWith('…')
-        
-        if (hasDots) {
-            // Use CSS-animated dots for smoother animation
-            notification.innerHTML = baseMessage + '<span class="dots"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>'
-        } else {
-            notification.innerText = msg
-        }
-        
-        notification.style.display = "block"
-        notification.style.color = "white"
-        notification.classList.remove("show", "pulse", "recognizing", "text-error")
-        // Trigger reflow to restart animation
-        void notification.offsetWidth
-        notification.classList.add("show", "pulse", "recognizing")
-        banner.classList.add("blur")
-    } else {
-        // Hide notification smoothly
-        notification.classList.remove("show", "pulse", "recognizing")
-        setTimeout(() => {
-            notification.innerText = ""
-            notification.innerHTML = ""
-        }, 300)
-        banner.classList.remove("blur")
+    if (!msg) {
+        notification.textContent = ""
+        return
     }
+    // Animate trailing dots ("Listening...")
+    const baseMessage = msg.replace(/(\.+|…)$/, '')
+    const hasDots = baseMessage !== msg
+    notification.textContent = baseMessage
+    if (hasDots) {
+        const dots = document.createElement("span")
+        dots.className = "dots"
+        dots.innerHTML = '<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>'
+        notification.appendChild(dots)
+    }
+    setState("listening")
 }
 
 async function autoModeController() {
@@ -475,29 +481,16 @@ async function autoModeController() {
 async function micRecognitionController() {
     document.getElementById("micRecognition").addEventListener("click", async (e) => {
         e.preventDefault()
-        await startMicRecognition()
+        if (!isBusy) await startMicRecognition()
     })
 }
 
 async function startMicRecognition() {
+    if (isBusy) return
+    isBusy = true
     try {
-        // Reset UI with smooth transitions
-        resultTable.style.opacity = "0"
-        streamProviders.style.opacity = "0"
-        setTimeout(() => {
-            resultTable.style.display = "none"
-            streamProvidersContainer.style.display = "none"
-        }, 300)
-        
-        circler.style.opacity = "0"
-        circler.style.transition = "opacity 0.3s ease"
-        setTimeout(() => {
-            circler.style.opacity = "1"
-        }, 50)
-        
-        notification.classList.remove("show", "pulse", "recognizing")
-        notification.innerText = ""
-        
+        showStatus(t("listening"))
+
         // Get fallback rules
         let fallbackRules = await getStorage("fallbackRules")
         let times = Object.keys(fallbackRules).map(t => Number(t))
@@ -526,6 +519,8 @@ async function startMicRecognition() {
     } catch(e) {
         console.error("Microphone recognition error:", e)
         showError(t("failedToAccessMicrophone"))
+    } finally {
+        isBusy = false
     }
 }
 

@@ -438,6 +438,17 @@
   "settingsImportFailed": {
     "message": "Échec de l'importation : ",
     "description": "Message shown when settings import failed"
+  },
+  "listen": {
+    "message": "Écouter",
+    "description": "Main popup"
+  },
+  "listenAgain": {
+    "message": "Écouter à nouveau",
+    "description": "Main popup"
+  },
+  "tapToRetry": {
+    "message": "Cliquez sur le logo pour réessayer",
+    "description": "Main popup"
   }
 }
-
