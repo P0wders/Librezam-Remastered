@@ -2,6 +2,7 @@ import { Recognize } from "/backendModules/Recognize.js"
 import { getStorage, setStorage } from "../common/storageHelper.js"
 import { t } from "./i18n.js"
 import { STREAMING_PROVIDERS } from "../common/streamingProviders.js"
+import { startVisualizer, stopVisualizer, attachStream } from "./visualizer.js"
 
 let isBusy = false
 
@@ -24,6 +25,7 @@ function init() {
 // UI state: "idle" | "listening" | "result" | "error"
 function setState(state) {
     document.body.dataset.state = state
+    if (state !== "listening") stopVisualizer()
 }
 
 function menuController() {
@@ -70,6 +72,7 @@ async function startTabRecognition() {
 async function runTabRecognition() {
     getTabId.tabId = null
     showStatus(t("listening"))
+    startVisualizer()
 
     let fallbackRules = await getStorage("fallbackRules")
     let times = Object.keys(fallbackRules).map(t => Number(t))
@@ -142,6 +145,8 @@ async function recordFromTabCapture(times) {
                     return reject(chrome.runtime.lastError || new Error("Stream capture failed"))
                 }
                 
+                attachStream(stream)
+
                 // To prevent muting the tab, play the audio through a new AudioContext
                 const audioContext = new AudioContext()
                 const source = audioContext.createMediaStreamSource(stream)
@@ -363,7 +368,8 @@ async function deleteHistoryItem(index) {
 }
 
 async function recordAudiosInTab(times){
-    return await sendMessagePromises({action: "Record", times: times})
+    // levels: ask the page to send live audio levels for the equalizer
+    return await sendMessagePromises({action: "Record", times: times, levels: true})
 }
 
 async function getNextRecorded() {
@@ -519,6 +525,7 @@ async function startMicRecognition() {
     isBusy = true
     try {
         showStatus(t("listening"))
+        startVisualizer()
 
         // Get fallback rules
         let fallbackRules = await getStorage("fallbackRules")
@@ -560,13 +567,17 @@ async function recordFromMicrophone(times) {
             throw new Error("Microphone access denied")
         }
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        attachStream(stream)
         const recorder = new MediaRecorder(stream)
         const data = []
 
         recorder.ondataavailable = e => data.push(e.data)
         recorder.start(10)
 
-        setTimeout(() => recorder.stop(), Math.max(...times))
+        setTimeout(() => {
+            recorder.stop()
+            stream.getTracks().forEach(track => track.stop()) // release the microphone
+        }, Math.max(...times))
         let audioPromises = []
         for(let time of times) {
             let audioPromise = new Promise(resolve => setTimeout(_ => new Blob([new Blob([])].concat(data)).arrayBuffer().then(r => resolve(new Uint8Array(r))), time))

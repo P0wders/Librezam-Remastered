@@ -2,6 +2,9 @@ import { Recognize } from "/backendModules/Recognize.js"
 import { getStorage, setStorage } from "../common/storageHelper.js"
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // Only handle our own actions (e.g. ignore the popup's live audio levels)
+    if(!["CORSRecord", "AutoGuess"].includes(request?.action)) return false
+
     if(chrome.offscreen) {
         offscreenRun(request).then(d => sendResponse(d))
     } else {

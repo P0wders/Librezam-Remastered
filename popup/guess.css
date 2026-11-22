@@ -241,7 +241,9 @@ body[data-state="listening"] #listenButton {
     background: var(--brand-light);
 }
 body[data-state="listening"] .eq { opacity: 1; }
-body[data-state="listening"] .eq span { animation: eq 0.9s ease-in-out infinite; }
+body[data-state="listening"] .eq:not(.live) span { animation: eq 0.9s ease-in-out infinite; }
+/* Live mode: heights come from the real audio (popup/visualizer.js) */
+.eq.live span { animation: none !important; transition: height 60ms linear; }
 .eq span:nth-child(1) { animation-delay: -0.2s !important; }
 .eq span:nth-child(2) { animation-delay: -0.5s !important; }
 .eq span:nth-child(3) { animation-delay: -0.1s !important; }

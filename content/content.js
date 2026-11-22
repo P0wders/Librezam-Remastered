@@ -1,7 +1,7 @@
 // When a message is received on clicking an icon, the audio in the DOM element is retrieved and responds to the pop-up script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.action == "Record") {
-        mainRecorder(request.times)
+        mainRecorder(request.times, request.levels)
         sendResponse(true)
     }
     if(request.action == "QueryAutoMode") {
@@ -19,13 +19,72 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 let audioPromisesMap = []
 
 
-function mainRecorder(times) {
+function mainRecorder(times, sendLevels) {
     let elements = findMediaElements()
+    if(sendLevels && elements.length) {
+        elements.forEach((elem, i) => streamLevels(elem, i, Math.max(...times)))
+    }
     audioPromisesMap = times.map(time => 
         elements.map(elem => 
             recordElem(elem, time)
         )
     )
+}
+
+// Live audio levels for the popup's equalizer bars.
+// Sends 7 band levels (0..1) about 20 times per second while recording;
+// only these numbers leave the page, never the audio itself.
+function streamLevels(elem, index, durationMs) {
+    if(checkIfCORS(elem)) return // recorded by the background page, no live stream here
+    let ctx
+    try {
+        const stream = createStream(elem)
+        if(!stream.getAudioTracks().length) return
+        ctx = new AudioContext()
+        const source = ctx.createMediaStreamSource(stream)
+        const analyser = ctx.createAnalyser()
+        analyser.fftSize = 1024
+        analyser.smoothingTimeConstant = 0.6
+        analyser.minDecibels = -85
+        analyser.maxDecibels = -20
+        const mute = ctx.createGain()
+        mute.gain.value = 0
+        source.connect(analyser)
+        analyser.connect(mute)
+        mute.connect(ctx.destination) // keeps the graph running, silently
+        const bins = new Uint8Array(analyser.frequencyBinCount)
+        const source_id = `${location.href}#${index}`
+        const timer = setInterval(() => {
+            analyser.getByteFrequencyData(bins)
+            const sent = chrome.runtime.sendMessage({
+                action: "LibrezamLevels",
+                source: source_id,
+                levels: bandLevels(bins, ctx.sampleRate, analyser.fftSize),
+            })
+            sent?.catch?.(() => {}) // popup closed: nobody listening
+        }, 50)
+        setTimeout(() => {
+            clearInterval(timer)
+            ctx.close().catch(() => {})
+        }, durationMs + 100)
+    } catch(e) {
+        ctx?.close().catch(() => {})
+    }
+}
+
+// 7 log-spaced bands from ~60 Hz to ~10 kHz, averaged and scaled to 0..1
+function bandLevels(bins, sampleRate, fftSize) {
+    const edges = [60, 150, 350, 800, 1800, 3500, 6000, 10000]
+    const hzPerBin = sampleRate / fftSize
+    const levels = []
+    for(let b = 0; b < 7; b++) {
+        const from = Math.max(1, Math.floor(edges[b] / hzPerBin))
+        const to = Math.max(from + 1, Math.ceil(edges[b + 1] / hzPerBin))
+        let sum = 0
+        for(let i = from; i < to && i < bins.length; i++) sum += bins[i]
+        levels.push(Math.min(1, sum / (to - from) / 255))
+    }
+    return levels
 }
 
 function getNextRecorded() {
