@@ -7,13 +7,13 @@
 const BARS = 7
 const MIN_PX = 4, MAX_PX = 22
 const STALE_MS = 900
-// Music carries far less energy in the highs: lift the upper bands so every bar moves
-const TILT = [1, 1, 1.15, 1.35, 1.7, 2.1, 2.6]
+// Music carries less energy in the highs: lift the upper bands a little so every bar moves
+const TILT = [1, 1, 1.08, 1.18, 1.32, 1.5, 1.7]
 
 let bars = []
 let eq = null
 let current = new Array(BARS).fill(0)
-let peaks = new Array(BARS).fill(0) // per-bar automatic gain (recent peak, slowly decaying)
+let averages = new Array(BARS).fill(-1) // per-bar running average level (auto-gain), -1 = not started
 let sources = new Map()        // source id -> { levels, at }
 let analysers = []             // { ctx, analyser, bins }
 let frame = null
@@ -37,7 +37,7 @@ export function startVisualizer() {
         stopVisualizer()
         active = true
         current.fill(0)
-        peaks.fill(0)
+        averages.fill(-1)
         frame = requestAnimationFrame(render)
     } catch (e) {
         console.log("Visualizer unavailable", e)
@@ -69,8 +69,8 @@ export function attachStream(stream) {
         const analyser = ctx.createAnalyser()
         analyser.fftSize = 1024
         analyser.smoothingTimeConstant = 0.6
-        analyser.minDecibels = -85
-        analyser.maxDecibels = -20
+        analyser.minDecibels = -90
+        analyser.maxDecibels = -10
         ctx.createMediaStreamSource(stream).connect(analyser)
         analysers.push({ ctx, analyser, bins: new Uint8Array(analyser.frequencyBinCount) })
     } catch (e) {
@@ -119,10 +119,14 @@ function renderFrame() {
         for (let i = 0; i < BARS; i++) {
             // gentle curve so quiet music still moves; fast attack, slower release
             const raw = Math.min(1, target[i] * TILT[i])
-            // auto-gain: scale each bar against its own recent peak (floor keeps silence flat)
-            peaks[i] = Math.max(raw, peaks[i] * 0.992)
-            const norm = raw / Math.max(peaks[i], 0.12)
-            const t = Math.pow(0.4 * raw + 0.6 * norm, 0.85)
+            // Auto-gain against the bar's running average (not its peak), so a typical level
+            // sits around the middle and beats rise above it, for quiet and loud masters alike.
+            if (averages[i] < 0) averages[i] = raw
+            averages[i] += (raw - averages[i]) * 0.015          // adapts over ~1 s
+            const rel = raw / Math.max(averages[i], 0.06)       // 1 = typical level; floor keeps silence flat
+            // Expand deviations from the average (beats), then soft-limit so bars
+            // approach the top on peaks but never stick there.
+            const t = Math.tanh(0.55 * Math.pow(rel, 1.8)) * 0.96
             current[i] += (t - current[i]) * (t > current[i] ? 0.55 : 0.18)
             bars[i].style.height = `${(MIN_PX + current[i] * (MAX_PX - MIN_PX)).toFixed(1)}px`
         }

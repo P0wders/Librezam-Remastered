@@ -45,8 +45,8 @@ function streamLevels(elem, index, durationMs) {
         const analyser = ctx.createAnalyser()
         analyser.fftSize = 1024
         analyser.smoothingTimeConstant = 0.6
-        analyser.minDecibels = -85
-        analyser.maxDecibels = -20
+        analyser.minDecibels = -90
+        analyser.maxDecibels = -10
         const mute = ctx.createGain()
         mute.gain.value = 0
         source.connect(analyser)
